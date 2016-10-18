@@ -1,0 +1,29 @@
+Package: JDLight
+Type: Package
+Title: Basic JDemetra+ toolset for seasonal adjustment
+Version: 0.1.0
+Authors@R: as.person(c(
+    "Jean Palate <jean.palate@nbb.be> [aut,cre]",
+    "Raf Baeyens <raf.baeyens@nbb.be> [com]"
+    ))
+Description: This package provides basic JDemetra+ functions
+Depends:
+    R (>= 3.1.1)
+Imports:
+    rJava (>= 0.9-8)
+License: EUPL
+LazyData: TRUE
+Collate:
+    'onLoad.R'
+    'jd_ts.R'
+    'jd_rslts.R'
+    'jd_sa.R'
+    'jd_cholette.R'
+    'jd_regression.R'
+    'jd_tempdisagg.R'
+    'jd_seasonality.R'
+Suggests:
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1

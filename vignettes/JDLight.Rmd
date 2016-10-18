@@ -1,0 +1,302 @@
+---
+title: "JDLight"
+author: "Raf Baeyens, Jean Palate"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{"JDLight"}
+  %\VignetteEngine{rmarkdown::render}
+  %\VignetteEncoding{UTF-8}
+
+---
+## Introduction
+
+The aim of this package is to offer the main functionalities of the Java software JDemetra+ to R users . This is achieved by linking the algorithmic libraries of JDemetra+ to conventional R structures by means of the rJava package.   
+The first section briefly describes JDemetra+, while following sections outline the different functions of the package, organized by statistical topic.  
+All functions are designed for non-expert users. In this way, they are handled as black-boxes, only providing the main results for a few (default) parameters.  
+
+## JDemetra+
+
+JDemetra+ (JD+) is a tool for seasonal adjustment (SA) developed by the National Bank of Belgium (NBB) in cooperation with the Deutsche Bundesbank and Eurostat in accordance with the guidelines of the European Statistical System (ESS). JD+ implements the concepts and algorithms used in the two leading SA methods: TRAMO/SEATS and X-12ARIMA. Those methods have been re-engineered using an object-oriented approach that enables easier handling, extensions and modifications.
+
+Besides seasonal adjustment, JD+ bundles other time series models that are useful in the production or analysis of economic statistics, including for instance outlier detection, nowcasting, temporal disaggregation or benchmarking.
+
+JD+ has been officially recommended, since February 2015, to the members of the ESS and of the European System of Central Banks as software for seasonal and calendar adjustment of official statistics.  
+ 
+From a technical point of view, JD+ is a collection of reusable and extensible Java components, accessible through a dedicated graphical interface.  The software is a free and open-source software (FOSS) developed under the EUPL licence. It can be downloaded from https://github.com/jdemetra.
+
+
+<br>
+
+##  Seasonal adjustment
+
+JD+ provides new implementations of the two leading algorithms for seasonal adjustment: TRAMO-SEATS+ and X12-ARIMA (X13-ARIMA-SEATS).
+
+The program TRAMO-SEATS+ was developed by Gianluca Caporello and Agustin Maravall -with programming support from Domingo Perez and Roberto Lopez- at the Bank of Spain. It is based on the program TRAMO-SEATS, previously developed by Victor Gomez and Agustin Maravall. The original software can be downloaded from the following address: http://www.bde.es.
+
+The program X12-ARIMA (or X13-ARIMA-SEATS) is produced by the US-Census Bureau. It can be downloaded from the following address: http://www.census.gov/srd/www/x12a. It should be noted that JD+ always uses the acronym X13 for this software.
+
+<i>
+Due to different algorithmic solutions and/or different programming approaches, the results of the original software and of JD+ may slightly differ on occasion. 
+</i>
+
+Beside those methods recommended by Eurostat, JD+ provides an implementation of the basic structural models, which also yields a suitable time series decomposition.  
+
+
+The functions in this package are designed to produce in the easiest way the most important results of a seasonal adjustment, namely the decomposition of a series in its different components: trend, seasonal and irregular. The seasonally adjusted series is also provided.
+For further details, users should refer to the original programs, to JDemetra+ itself or to the R-package "JD_SA" (coming soon). 
+
+<br>
+
+#### 1. jd_x13: seasonal adjustment using the x13 method
+
+>     decomposition <- jd_x13(sourceseries, specification)
+
+The jd_x13 method performs a seasonal adjustment following the X13 method, using a pre-defined specification. The result is an R time-series object, containing successively the original series, the trend, the seasonal component, the irregular component and the seasonally adjusted series.
+
+<br>
+
+The <i> specification </i> parameter specifies the automatic pre-treatment of the series. 
+The available options are described in the table below.
+
+
+>Identifier  | Log/level detection | Outliers detection  | Calender effects	 | ARIMA
+>----------- | ------------------- | ------------------  | ----------------- | ---
+>X11         | -           	  	   | -		               | - 		             | -	
+>RSA0        | -   			           | -       	           | -	               | Airline(+mean)
+>RSA1        | automatic      	   | AO/LS/TC       	   | -	               | Airline(+mean)
+>RSA2c       | automatic           | AO/LS/TC	           | 2 td vars + Easter| Airline(+mean)
+>RSA3        | automatic           | AO/LS/TC	           | -			           | automatic
+>RSA4c       | automatic           | AO/LS/TC	           | 2 td vars + Easter| automatic
+>RSA5c       | automatic           | AO/LS/TC	           | 7 td vars + Easter| automatic
+
+
+<br>
+
+#### 2. jd_tramoseats: seasonal adjustment using the TRAMO-SEATS method
+
+>     decomposition <- jd_tramoseats(sourceseries, specification)
+
+The jd_tramoseats method performs a seasonal adjustment following the method developed in Tramo-Seats, using a pre-defined specification. The result is an R time-series object, containing successively the original series, the trend, the seasonal component, the irregular component and the seasonally adjusted series.
+
+<br>
+
+The <i> specification </i> parameter specifies the automatic pre-treatment of the series. 
+The available options are described in the table below.
+
+
+
+>Identifier  | Log/level detection | Outliers detection  | Calender effects	 | ARIMA
+>----------- | ------------------- | ------------------  | ----------------- | ---
+>RSA0        | -   			           | -       	           | -	               | Airline(+mean)
+>RSA1        | automatic      	   | AO/LS/TC       	   | -	               | Airline(+mean)
+>RSA2        | automatic           | AO/LS/TC	           | 2 td vars + Easter| Airline(+mean)
+>RSA3        | automatic           | AO/LS/TC	           | -			           | automatic
+>RSA4        | automatic           | AO/LS/TC	           | 2 td vars + Easter| automatic
+>RSA5        | automatic           | AO/LS/TC	           | 7 td vars + Easter| automatic
+>RSAfull     | automatic           | AO/LS/TC	           | automatic         | automatic
+
+
+<br>
+
+#### 3. jd_sts: structural time series model
+
+>     decomposition <- jd_sts(sourceseries, prepocessing, seasmodel)
+
+The jd_sts method performs a seasonal adjustment based on a basic structural model.
+The original series is modelled in a first step by means of an automatic procedure (pre-processing step).
+A basic structural model is then estimated, using the regression variables identified in the first step. 
+
+
+The pre-processing can be performed either by means of Tramo (RSA2)  or by means of X13 (RSA2). It can also be skipped (default).
+The possible options are respectively "Tramo", "Regarima", "None"
+
+The seasonal component used in the structural model can be modelled in different ways. Using the terminology of Proietti[2000], the possible values for <i> seasmodel </i> are
+"Trigonometric" (default), "Crude", "HarrisonStevens", "Dummy", "Fixed", "Unused"
+
+---
+<br>
+
+
+## Benchmarking and temporal disaggregation
+
+The benchmarking problem can be described as follows: For a given series x(t), find θ(t) that preserve 'as much as possible' the movements of the original series and that fulfil given aggregation constraints.The benchmarking methods need the time series of the constraints (low-frequency), the original series (high-frequency) and some parameters that describe the underlying optimization problem. To be noted that the high-frequency series can be omitted; the problem is then a pure interpolation problem. The aggregation constraints can be defined following different ways: by sum, by average or taking the first or the last observation (respectively  "Sum", "Average", "First", "Last").
+
+JDemetra provides the following methods:
+• Cholette
+• Denton 
+
+
+#### Benchmarking: Cholette
+
+>     bench <- jd_cholette(x, y, rho, lambda, conversion)
+
+The Cholette method minimizes the following objective function
+
+<br>
+
+$$\sum_{i,t}\Bigg(\bigg(\frac{{\theta_{i,t}}-x_{i,t}}{\left|x_{i,t}\right|^\lambda}\bigg)-\rho\bigg(\frac{\theta_{i,t-1}-x_{i,t-1}}{\left|x_{i,t-1}\right|^\lambda}\bigg)\Bigg)^2$$
+
+<br>
+
+#### Benchmarking: Denton
+
+>     bench <- jd_denton(x, y, mul, d, conversion)
+
+The Denton method minimizes the following objective functions
+ 
+<br>
+
+ * Additive        : $\sum_{i,t}\left(\Delta^d\left(\theta_{i,t}-x_{i,t}\right)\right)^2$
+
+
+
+ * Multiplicative  : $\sum_{i,t}\bigg(\Delta^d\Big(\frac{\theta_{i,t}}{x_{i,t}}\Big)\bigg)^2$
+ 
+<br>
+ 
+ under the constraint that $agg_{i}\left(x_{i,t}\right)=y_{t}$
+ 
+where $agg$ defines the aggregation function. It should be noted that the additive case is well-defined even if $x_{i,t}$ is omitted.
+ 
+<br>
+
+
+#### Temporal disaggregation
+
+>     disagg <- jd_td(y~1 + x, "Ar1", conversion, zeroinit=TRUE, fixed.rho=.5)
+
+The regression-based temporal disaggregation is defined by the following model:
+
+$y_t=X_t β+μ_t$
+
+under the constraint that
+
+$y_T=\sum_{tεT}y_t$
+
+
+<br>
+
+The residuals may be modelled as:
+<br>
+
+ * White noise ("Wn")
+ 
+ * Chow-Lin ("Ar1"):         $μ_t=ρμ_{t-1}+ε_t$ 
+ 
+ * Fernandez ("Rw"):        $μ_t=μ_{t-1}+ε_t$
+ 
+ * Litterman ("RwAr1"):        $(μ_{t}-μ_{t-1})=ρ(μ_{t-1}-μ_{t-2} )+ε_t$	
+
+The parameters of the function are: 
+
+>argument                       | content                            
+>------------------------------ | ---------------------------------
+>formula    | The regression model (usual R-formulae)
+>model      | The model of the residuals (see above)
+>conversion | The aggregation mode
+>zeroinit   | 0-initialization of the residuals (FALSE by default)
+>fixed.rho  | value of the auto-regressive parameter for the residuals (optional)
+>truncated.rho| limit for the automatic search of the auto-regressive parameter for the residuals (optional)
+
+<br>
+
+Remarks:
+<br>
+
+ * zeroinit should not be modified, except for compatibility issues
+ 
+ * truncated.rho must be inside[-1,0]. It is not used when fixed.rho is specified
+ 
+ * when fixed.rho is not specified, the parameter -if any- is estimated by maximum likelihood. The "Wn" and the "Rw" models don't contain any parameter.
+ 
+
+##  Utilities
+
+#### Random time series 
+
+>     rnd <- jd_airline(len,freq,startdate,th,bth,fixed)
+
+The jd_airline function returns a time series that follows an airline model with random normal innovations.
+
+The parameter of the functions are: 
+
+>argument                   | content                               
+>-------------------------- | -------------------------------------------------
+>len        | number of observations
+>freq       | frequency (default=12)
+>startdate	| time of the first observation;format: c(YYYY,M);default= c(2000,1)
+>th	        | regular moving average parameter (default= -.6)
+>bth	      | seasonal moving average parameter (default= -.8)
+>fixed	    | fixed parameter (default=TRUE)
+
+When "fixed" is set to false, the parameters of the airline model are randomly drawn around the given parameters.
+
+<br>
+
+#### Aggregate time series to a lower frequency
+
+The jd-aggregate function aggregates a given series of a higher frequency to a lower frequency
+
+>     SAseries <- jd_aggregate(s, newfreq, mode)
+
+
+<table style="margin-left: 0">
+<thead>
+<tr class="header">
+<th align="left">arguments</th>
+<th align="left">content</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">s</td>
+<td align="left">source time series</td>
+</tr>
+<tr class="even">
+<td align="left">newfreq</td>
+<td align="left">new frequency (e.g. 1 for annual, 4 for quarterly</td>
+</tr>
+<tr class="odd">
+<td align="left">mode</td>
+<td align="left">optional argument; (default="Sum")</td>
+</tr>
+</tbody>
+</table>
+
+
+<br>
+
+Bibliography
+
+DAGUM, B.E. and CHOLETTE P.A. (2006): “Benchmarking, Temporal Distribution, and Reconciliation Methods for Time Series”, Springer.
+
+Findley D.F. (2005), "Some Recent Developments and Directions in Seasonal Adjustment", Journal of Official Statistics, 21, 2, pp. 343–365.PALATE J. (2005): ‘Reusable Components for Benchmarking Using Kalman Filters”, working papers and studies, European Communities.
+
+Gomez V. and Maravall A. (2001), "Seasonal Adjustment and Signal Extraction in Economic Time Series", Ch. 8 in D. Peña, G.C. Tiao and R.S. Tsay, eds., "A Course in Time Series Analysis", New York: J. Wiley and Sons, 202-246.
+
+HARVEY, A.C. (1989): "Forecasting, Structural Time Series Models and the Kalman Filter", Cambridge University Press.
+
+Proietti T. (2000), "Comparing seasonal components for structural time series models", International Journal of Forecasting, 16, 2, 247-260.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
