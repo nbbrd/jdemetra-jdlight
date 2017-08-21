@@ -28,7 +28,7 @@ jd_seasonality(s, test, differencing, mean)
 }
 }
 \value{
-returns the corresponding test
+returns ...
 
 }
 
