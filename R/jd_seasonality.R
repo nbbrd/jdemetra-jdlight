@@ -1,5 +1,5 @@
 jd_seasonality<-function(s, test="QS", differencing=1, mean=TRUE){
-  jd_s<-ts_r2jd(s)  
+  jd_s<-ts_r2jd(s)
   jd_seas<-.jcall("ec/tstoolkit/modelling/arima/tramo/SeasonalityTests", "Lec/tstoolkit/modelling/arima/tramo/SeasonalityTests;",
                   "seasonalityTest", jd_s, as.integer(differencing), mean, TRUE)
   if (test=="QS"){
@@ -41,11 +41,11 @@ jd_seasonality<-function(s, test="QS", differencing=1, mean=TRUE){
     attr(all, "description")<-desc
     all
   }
-  
+
 }
 
 jd_seasftest<-function(s, ami=FALSE){
-  jd_s<-ts_r2jd(s)  
+  jd_s<-ts_r2jd(s)
   jd_f<-.jnew("ec/satoolkit/diagnostics/FTest");
   if (ami){
     .jcall(jd_f, "Z", "testAMI", jd_s)
@@ -60,4 +60,17 @@ jd_seasftest<-function(s, ami=FALSE){
   desc<-.jcall(jd_dist, "S", "toString")
   attr(all, "description")<-desc
   all
+}
+
+jd_tdftest<-function(s, ar=TRUE){
+  jd_s<-ts_r2jd(s)
+  jd_f<-.jcall("ec/tstoolkit/jdr/tests/TradingDaysTests", "Lec/tstoolkit/information/StatisticalTest;", "ftest", jd_s, ar, as.integer(0))
+  if (is.jnull(jd_f))
+    return (NULL)
+  desc<-.jfield(jd_f, "S", "description")
+  val<-.jfield(jd_f, "D", "value")
+  pval<-.jfield(jd_f, "D", "pvalue")
+  all<-c(val, pval)
+  attr(all, "description")<-desc
+  return (all)
 }
